@@ -46,7 +46,7 @@ class GitHubResultType(Enum):
     description="Search GitHub.",
     options=[
         StringOption(
-            name="topic",
+            name="query",
             description="What to search for.",
         ),
         StringOption(
@@ -63,9 +63,9 @@ class GitHubResultType(Enum):
         ),
     ],
 )
-async def github(interaction: Interaction, topic: str, repository: str, type: str):
+async def github(interaction: Interaction, query: str, repository: str, type: str):
     result_type = GitHubResultType[type.upper()]
-    search_string = f"repo:{repository} {topic or ''} {result_type.value}"
+    search_string = f"repo:{repository} {query or ''} {result_type.value}"
     async with httpx.AsyncClient() as client:
         response = await client.post(
             "https://api.github.com/graphql",
