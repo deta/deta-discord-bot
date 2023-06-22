@@ -46,10 +46,6 @@ class GitHubResultType(Enum):
     description="Search GitHub.",
     options=[
         StringOption(
-            name="query",
-            description="What to search for.",
-        ),
-        StringOption(
             name="repository",
             description="The repository to search in.",
             required=True,
@@ -60,6 +56,10 @@ class GitHubResultType(Enum):
             description="Type of result to search for.",
             required=True,
             choices=[Choice(type.name, type.name) for type in GitHubResultType],
+        ),
+        StringOption(
+            name="query",
+            description="What to search for.",
         ),
     ],
 )
