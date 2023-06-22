@@ -32,6 +32,8 @@ app = Client(
     public_key=APPLICATION_PUBLIC_KEY,
 )
 
+app.load_modules("modules")
+
 
 @app.on_error
 async def on_error(i: Interaction, error: Exception):
