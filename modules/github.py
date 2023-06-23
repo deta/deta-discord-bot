@@ -108,7 +108,11 @@ async def github(interaction: Interaction, type: str, query: str, repository: st
     if not GITHUB_TOKEN:
         await interaction.response("GitHub token has not been provided.", ephemeral=True)
         return
-    result_type = GitHubResultType[type.upper()]
+    try:
+        result_type = GitHubResultType[type.upper()]
+    except KeyError:
+        await interaction.response("Invalid value for parameter 'type'.", ephemeral=True)
+        return
     if repository:
         search_string = f"repo:deta/{repository}"
     else:
