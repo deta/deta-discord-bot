@@ -138,7 +138,13 @@ async def github(interaction: Interaction, type: str, query: str, repository: st
             pass
     if results:
         # TODO: configurable color
-        await interaction.response(embed=Embed(title="Search Results", description="\n".join(results), color=0xEE4196))
+        embed = Embed(title="GitHub Search Results", color=0xEE4196)
+        embed.add_field("Organization", "deta", inline=True)
+        embed.add_field("Repository", repository or "All", inline=True)
+        embed.add_field("Type", result_type.name.replace("_", " ").title(), inline=True)
+        embed.add_field("Query", f"`{query}`", inline=True)
+        embed.add_field("Results", "\n".join(results))
+        await interaction.response(embed=embed)
     else:
         await interaction.response("No results found.", ephemeral=True)
 
