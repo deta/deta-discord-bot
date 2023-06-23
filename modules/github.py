@@ -154,7 +154,12 @@ async def autocomplete_repository(interaction: Interaction, value: str):
     if not repos_cache:
         async with httpx.AsyncClient() as client:
             print("FETCHING REPOS")
-            response = await client.get("https://api.github.com/orgs/deta/repos?sort=updated")
+            response = await client.get(
+                url="https://api.github.com/orgs/deta/repos?sort=updated",
+                headers={
+                    "Authorization": f"Bearer {GITHUB_TOKEN}",
+                },
+            )
             if response.status_code == 200:
                 repos_cache.extend(response.json())
     choices = []
