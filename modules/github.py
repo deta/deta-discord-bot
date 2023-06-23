@@ -54,6 +54,9 @@ class GitHubResultType(Enum):
     PULL_REQUEST = "is:pr"
     DISCUSSION = ""  # Discussion ignores the 'is:' filter
 
+    def __str__(self):
+        return self.name.replace("_", " ").title()
+
 
 class GitHubSearchResult(NamedTuple):
     """Represents an issue, pull request, or discussion as part of a GitHub search result."""
@@ -132,7 +135,7 @@ def create_search_results_embed(
     embed = Embed(title="GitHub Search Results", color=0xEE4196)
     embed.add_field("Organization", "deta", inline=True)
     embed.add_field("Repository", repository or "All", inline=True)
-    embed.add_field("Type", result_type.name.replace("_", " ").title(), inline=True)
+    embed.add_field("Type", str(result_type), inline=True)
     embed.add_field("Query", f"`{query}`", inline=True)
     embed.add_field("Results", "\n".join(map(str, results)))
     return embed
@@ -146,7 +149,7 @@ def create_search_results_embed(
             name="type",
             description="Type of result to search for.",
             required=True,
-            choices=[Choice(type.name, type.name) for type in GitHubResultType],
+            choices=[Choice(str(type), type.name) for type in GitHubResultType],
         ),
         StringOption(
             name="query",
