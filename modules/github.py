@@ -7,8 +7,8 @@ from discohook import Choice, Client, Embed, Interaction, StringOption, command
 from thefuzz import fuzz
 
 QUERY = (
-    """query searchResults($search_string: String!, $type: SearchType!, $num: Int!) {
-    search(type: $type, query: $search_string, first: $num) {
+    """query searchResults($search_string: String!, $type: SearchType!, $max: Int!) {
+    search(type: $type, query: $search_string, first: $max) {
         nodes {
             ... on Discussion {
                 title
@@ -129,7 +129,7 @@ async def github(interaction: Interaction, type: str, query: str, repository: st
                     "type": result_type.name
                     if result_type == GitHubResultType.DISCUSSION
                     else GitHubResultType.ISSUE.name,
-                    "num": 5,
+                    "max": 5,
                 },
             },
             headers={
