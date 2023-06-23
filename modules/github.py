@@ -63,12 +63,24 @@ class GitHubSearchResult(NamedTuple):
     url: str
     repository: str
 
+    def __str__(self):
+        return f"[{self.repository}#{self.number}]({self.url}): {self.title}"
 
-def format_search_results(results: Iterable[GitHubSearchResult]) -> list[str]:
-    formatted_results = []
-    for result in results:
-        formatted_results.append(f"[{result.repository}#{result.number}]({result.url}): {result.title}")
-    return formatted_results
+
+def create_search_results_embed(
+    results: Iterable[GitHubSearchResult],
+    result_type: GitHubResultType,
+    query: str,
+    repository: str,
+) -> Embed:
+    # TODO: configurable color
+    embed = Embed(title="GitHub Search Results", color=0xEE4196)
+    embed.add_field("Organization", "deta", inline=True)
+    embed.add_field("Repository", repository or "All", inline=True)
+    embed.add_field("Type", result_type.name.replace("_", " ").title(), inline=True)
+    embed.add_field("Query", f"`{query}`", inline=True)
+    embed.add_field("Results", "\n".join(map(str, results)))
+    return embed
 
 
 @command(
@@ -124,7 +136,7 @@ async def github(interaction: Interaction, type: str, query: str, repository: st
     results = []
     if response.status_code == 200:
         try:
-            nodes = [
+            results = [
                 GitHubSearchResult(
                     title=node["title"],
                     number=node["number"],
@@ -133,18 +145,10 @@ async def github(interaction: Interaction, type: str, query: str, repository: st
                 )
                 for node in response.json()["data"]["search"]["nodes"]
             ]
-            results = format_search_results(nodes)
         except KeyError:
             pass
     if results:
-        # TODO: configurable color
-        embed = Embed(title="GitHub Search Results", color=0xEE4196)
-        embed.add_field("Organization", "deta", inline=True)
-        embed.add_field("Repository", repository or "All", inline=True)
-        embed.add_field("Type", result_type.name.replace("_", " ").title(), inline=True)
-        embed.add_field("Query", f"`{query}`", inline=True)
-        embed.add_field("Results", "\n".join(results))
-        await interaction.response(embed=embed)
+        await interaction.response(embed=create_search_results_embed(results, result_type, query, repository))
     else:
         await interaction.response("No results found.", ephemeral=True)
 
