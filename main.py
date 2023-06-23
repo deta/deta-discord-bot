@@ -41,6 +41,7 @@ async def on_error(i: Interaction, error: Exception):
         await i.followup(f"```py\nError: {error}\n```", ephemeral=True)
     else:
         await i.response(f"```py\nError: {error}\n```", ephemeral=True)
+    raise error
 
 
 @app.command(
