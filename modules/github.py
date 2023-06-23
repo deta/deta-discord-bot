@@ -71,7 +71,7 @@ class GitHubSearchResult(NamedTuple):
 
 
 # FIXME: 'result type' is not a descriptive variable or type name
-async def search_github(search_string: str, result_type: GitHubResultType, max: int = 5) -> list[GitHubSearchResult]:
+async def search_github(search_string: str, type: GitHubResultType, max: int = 5) -> list[GitHubSearchResult]:
     async with httpx.AsyncClient() as client:
         response = await client.post(
             "https://api.github.com/graphql",
@@ -80,8 +80,8 @@ async def search_github(search_string: str, result_type: GitHubResultType, max: 
                 "variables": {
                     "search_string": search_string,
                     # The API doesn't distinguish between issues and PRs here.
-                    "type": result_type.name
-                    if result_type == GitHubResultType.DISCUSSION
+                    "type": type.name
+                    if type == GitHubResultType.DISCUSSION
                     else GitHubResultType.ISSUE.name,
                     "max": max,
                 },
