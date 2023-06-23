@@ -67,6 +67,61 @@ class GitHubSearchResult(NamedTuple):
         return f"[{self.repository}#{self.number}]({self.url}): {self.title}"
 
 
+# FIXME: 'result type' is not a descriptive variable or type name
+async def search_github(search_string: str, result_type: GitHubResultType, max: int = 5) -> list[GitHubSearchResult]:
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            "https://api.github.com/graphql",
+            json={
+                "query": QUERY,
+                "variables": {
+                    "search_string": search_string,
+                    # The API doesn't distinguish between issues and PRs here.
+                    "type": result_type.name
+                    if result_type == GitHubResultType.DISCUSSION
+                    else GitHubResultType.ISSUE.name,
+                    "max": max,
+                },
+            },
+            headers={
+                "Authorization": f"Bearer {GITHUB_TOKEN}",
+                "Content-Type": "application/json",
+            },
+        )
+    results = []
+    if response.status_code == 200:
+        try:
+            results = [
+                GitHubSearchResult(
+                    title=node["title"],
+                    number=node["number"],
+                    url=node["url"],
+                    repository=node["repository"]["name"],
+                )
+                for node in response.json()["data"]["search"]["nodes"]
+            ]
+        except KeyError:
+            pass
+    return results
+
+
+async def get_repos(org: str) -> list[dict]:
+    print("repos cache before: ", repos_cache)
+    if not repos_cache:
+        async with httpx.AsyncClient() as client:
+            print("FETCHING REPOS")
+            response = await client.get(
+                url=f"https://api.github.com/orgs/{org}/repos?sort=updated",
+                headers={
+                    "Authorization": f"Bearer {GITHUB_TOKEN}",
+                },
+            )
+            if response.status_code == 200:
+                repos_cache.extend(response.json())
+    print("repos cache after: ", repos_cache)
+    return repos_cache
+
+
 def create_search_results_embed(
     results: Iterable[GitHubSearchResult],
     result_type: GitHubResultType,
@@ -118,39 +173,7 @@ async def github(interaction: Interaction, type: str, query: str, repository: st
     else:
         search_string = "org:deta"
     search_string += f" {query or ''} {result_type.value}"
-    async with httpx.AsyncClient() as client:
-        response = await client.post(
-            "https://api.github.com/graphql",
-            json={
-                "query": QUERY,
-                "variables": {
-                    "search_string": search_string,
-                    # The API doesn't distinguish between issues and PRs here.
-                    "type": result_type.name
-                    if result_type == GitHubResultType.DISCUSSION
-                    else GitHubResultType.ISSUE.name,
-                    "max": 5,
-                },
-            },
-            headers={
-                "Authorization": f"Bearer {GITHUB_TOKEN}",
-                "Content-Type": "application/json",
-            },
-        )
-    results = []
-    if response.status_code == 200:
-        try:
-            results = [
-                GitHubSearchResult(
-                    title=node["title"],
-                    number=node["number"],
-                    url=node["url"],
-                    repository=node["repository"]["name"],
-                )
-                for node in response.json()["data"]["search"]["nodes"]
-            ]
-        except KeyError:
-            pass
+    results = await search_github(search_string, result_type)
     if results:
         await interaction.response(embed=create_search_results_embed(results, result_type, query, repository))
     else:
@@ -159,19 +182,9 @@ async def github(interaction: Interaction, type: str, query: str, repository: st
 
 @github.autocomplete("repository")
 async def autocomplete_repository(interaction: Interaction, value: str):
-    if not repos_cache:
-        async with httpx.AsyncClient() as client:
-            print("FETCHING REPOS")
-            response = await client.get(
-                url="https://api.github.com/orgs/deta/repos?sort=updated",
-                headers={
-                    "Authorization": f"Bearer {GITHUB_TOKEN}",
-                },
-            )
-            if response.status_code == 200:
-                repos_cache.extend(response.json())
+    repos = await get_repos("deta")
     choices = []
-    for repo in repos_cache:
+    for repo in repos:
         name = repo["name"]
         ratio = fuzz.ratio(name, value.lower())
         if len(choices) < 25 < ratio:
