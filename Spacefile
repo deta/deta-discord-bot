@@ -14,3 +14,4 @@ micros:
         - name: REPOSITORY_URL
         - name: GIT_BRANCH
           default: main
+        - name: GITHUB_TOKEN
