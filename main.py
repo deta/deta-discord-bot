@@ -54,21 +54,26 @@ async def on_error(i: Interaction, error: Exception):
     ],
 )
 async def docs(i: Interaction, *, query: str):
-    hit = httpx.get(f"https://teletype.deta.dev/search?q={query}&l=1").json()["hits"][0]
-    button = Button(
-        label="Open docs page",
-        url=hit["url"],
-        style=ButtonStyle.link,
-        emoji=PartialEmoji(name="deta", id="1047502818208137336"),
-    )
-    view = View()
-    view.add_buttons(button)
-    embed = Embed(
-        title="Deta Docs",
-        description=f"[{hit['fragments']}]({hit['url']})",
-        color=0xEE4196,
-    )
-    await i.response(embed=embed, view=view)
+    try:
+        hit = httpx.get(f"https://teletype.deta.dev/search?q={query}&l=1").json()[
+            "hits"
+        ][0]
+        button = Button(
+            label="Open docs page",
+            url=hit["url"],
+            style=ButtonStyle.link,
+            emoji=PartialEmoji(name="deta", id="1047502818208137336"),
+        )
+        view = View()
+        view.add_buttons(button)
+        embed = Embed(
+            title="Deta Docs",
+            description=f"[{hit['fragments']}]({hit['url']})",
+            color=0xEE4196,
+        )
+        await i.response(embed=embed, view=view)
+    except:
+        await i.response("This page doesn't exist! ")
 
 
 @docs.autocomplete(name="query")
