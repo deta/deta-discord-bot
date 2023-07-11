@@ -32,6 +32,8 @@ app = Client(
     public_key=APPLICATION_PUBLIC_KEY,
 )
 
+app.load_modules("modules")
+
 
 @app.on_error
 async def on_error(i: Interaction, error: Exception):
@@ -39,6 +41,7 @@ async def on_error(i: Interaction, error: Exception):
         await i.followup(f"```py\nError: {error}\n```", ephemeral=True)
     else:
         await i.response(f"```py\nError: {error}\n```", ephemeral=True)
+    raise error
 
 
 @app.command(
