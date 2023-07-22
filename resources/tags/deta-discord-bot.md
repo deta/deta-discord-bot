@@ -8,7 +8,7 @@ title: "Deta Discord Bot"
 > Language - Python 3.9
 > Main Library - [Discohook](https://github.com/jnsougata/discohook)
 > Host - [Deta Space](https://deta.space)
-> [Source](https://github.com/slumberdemon/deta-bot) [Invite](https://discord.com/oauth2/authorize?client_id=1046414447519997972&permissions=2147762176&scope=applications.commands%20bot)
+> [Source](https://github.com/deta/deta-discord-bot)
 
 **Usage**
 
