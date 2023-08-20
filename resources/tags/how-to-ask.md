@@ -33,7 +33,7 @@ Example question:
 > ```py
 > ...
 > headers = {
->     "X-API-Key": "my api key",
+>     "X-Space-App-Key": "my space app key",
 >     "Content-Type": "application/json",
 > }
 > r = requests.post(url="https://example.deta.app/my-route", headers=headers, json=data)
